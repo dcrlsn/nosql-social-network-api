@@ -1,4 +1,5 @@
-const { User } = require('../models');
+const { User, Thought } = require('../models');
+const { requiredPaths } = require('../models/Reaction');
 
 const getAllUsers = (req, res) => {
   User
@@ -64,9 +65,75 @@ const deleteUser = (req, res) => {
     .findOneAndDelete({
       _id: req.params.id
     })
+    .then(dbData => {
+      User
+        .updateMany({
+          _id: {
+            $in: dbData.friends
+          }
+        },
+          {
+            $pull: {
+              friends: req.params.id
+            }
+          })
+        .then(() => {
+          Thought
+            .deleteMany({
+              username: dbData.username
+            })
+            .then(dbData => res.json(dbData))
+            .catch(err => {
+              console.log(err);
+              res.status(500).json(err);
+            })
+        })
+        .catch(err => {
+          console.log(err);
+          res.status(500).json(err);
+        })
+    })
     .then(dbData => res.json(dbData))
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
     })
+}
+
+const addFriend = (req, res) => {
+  User
+    .findOneAndUpdate({
+      _id: req.params.id
+    }, {
+      $push: {
+        friends: req.params.friendId
+      }
+    }, {
+      new: true
+    })
+    .then(dbData => res.json(dbData))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    })
+}
+
+const removeFriend = (req, res) => {
+  User
+    .findOneAndUpdate({
+      _id: req.params.id
+    }, {
+      $pull: { friends: req.params.friendId }
+    }, {
+      new: true
+    })
+    .then(dbData => res.json(dbData))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    })
+}
+
+module.exports = {
+  getAllUsers, getUserbyId, createUser, updateUser, deleteUser, addFriend, removeFriend
 }
