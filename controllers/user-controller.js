@@ -77,15 +77,15 @@ const deleteUser = (req, res) => {
               friends: req.params.id
             }
           })
+        .then(dbData => res.json(dbData))
+        .catch(err => {
+          console.log(err);
+          res.status(500).json(err);
+        })
         .then(() => {
           Thought
             .deleteMany({
               username: dbData.username
-            })
-            .then(dbData => res.json(dbData))
-            .catch(err => {
-              console.log(err);
-              res.status(500).json(err);
             })
         })
         .catch(err => {
@@ -93,7 +93,6 @@ const deleteUser = (req, res) => {
           res.status(500).json(err);
         })
     })
-    .then(dbData => res.json(dbData))
     .catch(err => {
       console.log(err);
       res.status(500).json(err);
