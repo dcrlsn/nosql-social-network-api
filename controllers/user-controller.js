@@ -1,5 +1,4 @@
 const { User, Thought } = require('../models');
-const { requiredPaths } = require('../models/Reaction');
 
 const getAllUsers = (req, res) => {
   User
